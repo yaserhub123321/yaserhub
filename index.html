@@ -335,6 +335,162 @@ button:active {
 #themeToggle{margin:0 !important;}
 </style>
 
+
+<style id="soft-theme-palette">
+body:not(.light-mode){background:#242321 !important;color:#e6e2d9 !important;}
+body:not(.light-mode) .landing-card{background:#2c2b29 !important;border-color:#403e39 !important;color:#e6e2d9 !important;}
+body:not(.light-mode) input,body:not(.light-mode) textarea,body:not(.light-mode) select{background:#302f2c !important;color:#e6e2d9 !important;border-color:#45423c !important;}
+body:not(.light-mode) .theme-toggle,body:not(.light-mode) .deeper-btn,body:not(.light-mode) .landing-lang{background:#302f2c !important;color:#e6e2d9 !important;border-color:#48453f !important;}
+body.light-mode{background:#e9e7e2 !important;color:#242321 !important;}
+body.light-mode .landing-card{background:#f7f5f0 !important;border-color:#d5d1c8 !important;}
+body.light-mode input,body.light-mode textarea,body.light-mode select{background:#f7f5f0 !important;color:#242321 !important;border-color:#d0ccc3 !important;}
+body.light-mode .theme-toggle,body.light-mode .deeper-btn,body.light-mode .landing-lang{background:#f7f5f0 !important;color:#242321 !important;border-color:#d0ccc3 !important;}
+</style>
+
+
+<style id="eye-friendly-typography">
+/* Eye-friendly typography: strong readability without harsh contrast */
+body{
+  font-family: Arial, "Segoe UI", sans-serif !important;
+  font-size:16px !important;
+  line-height:1.65 !important;
+  letter-spacing:.01em !important;
+  -webkit-font-smoothing:antialiased !important;
+  text-rendering:optimizeLegibility !important;
+}
+h1,h2,h3,h4{
+  line-height:1.25 !important;
+  letter-spacing:.005em !important;
+}
+p,li,label{
+  line-height:1.7 !important;
+}
+button,input,textarea,select{
+  font-family:inherit !important;
+  font-size:15px !important;
+  line-height:1.4 !important;
+}
+
+/* Dark mode: soft background with high enough text contrast */
+body:not(.light-mode){
+  color:#eeeae2 !important;
+}
+body:not(.light-mode) p,
+body:not(.light-mode) li,
+body:not(.light-mode) label{
+  color:#ddd9d1 !important;
+}
+body:not(.light-mode) h1,
+body:not(.light-mode) h2,
+body:not(.light-mode) h3,
+body:not(.light-mode) strong{
+  color:#f3efe7 !important;
+}
+
+/* Light mode: warm white rather than glaring white */
+body.light-mode{
+  color:#252525 !important;
+}
+body.light-mode p,
+body.light-mode li,
+body.light-mode label{
+  color:#3b3a37 !important;
+}
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode strong{
+  color:#20201e !important;
+}
+
+/* Keep interactive controls readable in both modes */
+body:not(.light-mode) input,
+body:not(.light-mode) textarea,
+body:not(.light-mode) select{
+  color:#eeeae2 !important;
+}
+body.light-mode input,
+body.light-mode textarea,
+body.light-mode select{
+  color:#292825 !important;
+}
+
+/* Comfortable focus indicator */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible{
+  outline:3px solid #8f8b82 !important;
+  outline-offset:3px !important;
+}
+</style>
+
+
+<style id="light-example-fix">
+/* Make the Examples section follow light mode too. */
+body.light-mode .examples,
+body.light-mode .examples-section,
+body.light-mode .example-card,
+body.light-mode .example-item{
+  background:#f7f5f0 !important;
+  color:#292825 !important;
+  border-color:#d5d1c8 !important;
+}
+body.light-mode .examples h2,
+body.light-mode .examples h3,
+body.light-mode .examples strong,
+body.light-mode .example-card h3,
+body.light-mode .example-item h3{
+  color:#20201e !important;
+}
+body.light-mode .examples p,
+body.light-mode .examples span,
+body.light-mode .example-card p,
+body.light-mode .example-item p{
+  color:#3b3a37 !important;
+}
+</style>
+
+
+<style id="examples-cards-light-fix">
+/* ONLY fix the three example cards in Light mode. */
+body.light-mode .examples .example-card,
+body.light-mode .examples-section .example-card,
+body.light-mode .examples .example-item,
+body.light-mode .examples-section .example-item{
+  background:#f7f5f0 !important;
+  background-color:#f7f5f0 !important;
+  color:#292825 !important;
+  border-color:#d5d1c8 !important;
+  box-shadow:0 2px 10px rgba(0,0,0,.06) !important;
+}
+body.light-mode .examples .example-card *,
+body.light-mode .examples-section .example-card *,
+body.light-mode .examples .example-item *,
+body.light-mode .examples-section .example-item *{
+  color:#292825 !important;
+}
+</style>
+
+
+<style id="examples-three-cards-final-fix">
+/* Final fix ONLY for the three example cards in Light mode. */
+body.light-mode #landingPage .examples > div{
+  background:#f7f5f0 !important;
+  background-color:#f7f5f0 !important;
+  color:#292825 !important;
+  border:1px solid #d5d1c8 !important;
+  box-shadow:0 2px 8px rgba(40,38,34,.05) !important;
+}
+body.light-mode #landingPage .examples > div strong{
+  color:#252422 !important;
+}
+body.light-mode #landingPage .examples > div span{
+  color:#5a5751 !important;
+}
+</style>
+
 </head>
 <body>
 
@@ -879,7 +1035,7 @@ document.addEventListener("DOMContentLoaded", function(){
     document.body.classList.toggle("light-mode", light);
     root.classList.toggle("light-mode", light);
 
-    const label = light ? "☾ Dark" : "☀ Light";
+    const label = light ? "☀ Light" : "☾ Dark";
     if(mainButton) mainButton.textContent = label;
     
 
