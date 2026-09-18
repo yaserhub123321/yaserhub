@@ -491,6 +491,20 @@ body.light-mode #landingPage .examples > div span{
 }
 </style>
 
+<style id="pricing-handoff-ui">
+.result-subtitle{margin:18px 0 8px;font-size:16px}
+.rate-audit{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0;color:#777;font-size:13px}
+.floor-notice{margin:10px 0;padding:9px 11px;border-radius:9px;background:#ece9e1;color:#514e48;font-size:13px}
+body:not(.light-mode) .floor-notice{background:#34322e;color:#ddd8cf}
+body.light-mode .rate-audit{color:#514e48}
+</style>
+<style id="small-business-simple-ui">
+.simple-note{margin:-5px 0 15px;font-size:13px;line-height:1.5;opacity:.72}
+.advanced-settings{margin:14px 0 16px;border:1px solid rgba(127,127,127,.22);border-radius:12px;padding:0 12px}
+.advanced-settings summary{cursor:pointer;padding:11px 2px;font-size:13px;opacity:.78;user-select:none}
+.advanced-settings[open] summary{margin-bottom:4px}
+.advanced-grid{padding-bottom:10px}
+</style>
 </head>
 <body>
 
@@ -571,7 +585,7 @@ body.light-mode #landingPage .examples > div span{
     <h2 id="details">تفاصيل الطباعة</h2>
     <div class="grid">
       <div class="stat"><small id="t1">مدة الطباعة</small><strong id="time">—</strong></div>
-      <div class="stat"><small id="t2">وزن الفيلامنت</small><strong id="weight">—</strong></div>
+      <div class="stat"><small id="t2">وزن الفيلامنت</small><strong id="weight">—</strong></div><div class="stat"><small id="t5">الحجم</small><strong id="volume">—</strong></div>
       <div class="stat"><small id="t3">طول الفيلامنت</small><strong id="length">—</strong></div>
       <div class="stat"><small id="t4">ارتفاع الطبقة</small><strong id="layer">—</strong></div>
     </div>
@@ -580,39 +594,47 @@ body.light-mode #landingPage .examples > div span{
 
   <section class="card">
     <h2 id="settings">إعدادات التسعير</h2>
+    <p class="simple-note" id="simpleNote">خلّها بسيطة: عدّل الأشياء التي تستخدمها فعلاً، واترك الإعدادات الإضافية كما هي.</p>
     <div class="form">
       <div class="field"><label id="l1">سعر الفيلامنت / كجم</label><input id="filamentKg" type="number" value="97" min="0" step=".01"></div>
-      <div class="field"><label id="l10">نوع الفيلامنت</label><select id="material"><option value="1.24" selected>PLA</option><option value="1.27">PETG</option><option value="1.04">ABS</option><option value="1.21">TPU</option></select></div>
-      <div class="field"><label id="l11">قطر الفيلامنت (مم)</label><select id="diameter"><option value="1.75" selected>1.75</option><option value="2.85">2.85</option></select></div>
-      <div class="field"><label id="l2">تشغيل الطابعة / ساعة</label><input id="printerHour" type="number" value="5" min="0" step=".01"></div>
-      <div class="field"><label id="l3">الكهرباء / ساعة</label><input id="electricityHour" type="number" value="1" min="0" step=".01"></div>
-      <div class="field"><label id="l4">الصيانة</label><input id="maintenance" type="number" value="2" min="0" step=".01"></div>
-      <div class="field"><label id="l5">العمل</label><input id="labor" type="number" value="3" min="0" step=".01"></div>
-      <div class="field"><label id="l6">التغليف</label><input id="packaging" type="number" value="2" min="0" step=".01"></div>
-      <div class="field"><label id="l7">أخرى</label><input id="other" type="number" value="0" min="0" step=".01"></div>
-      <div class="field"><label id="l8">هامش الربح %</label><input id="profit" type="number" value="15" min="0" step=".1"></div>
-      <div class="field"><label id="l9">إضافة ثابتة</label><input id="bonus" type="number" value="5" min="0" step=".01"></div>
+      <div class="field"><label id="l2">تكلفة تشغيل الطابعة / ساعة</label><input id="machineHourRate" type="number" value="0.30" min="0" step=".01"></div>
+      <div class="field"><label id="l3">أجر العمل / ساعة</label><input id="labourHourRate" type="number" value="12" min="0" step=".01"></div>
+      <div class="field"><label id="l4">ساعات العمل</label><input id="labourHours" type="number" value="0" min="0" step="1"></div>
+      <div class="field"><label id="l5">دقائق العمل</label><input id="labourMinutes" type="number" value="15" min="0" max="60" step="1"></div>
+      <div class="field"><label id="l6">التغليف</label><input id="packaging" type="number" value="0.50" min="0" step=".01"></div>
+      <div class="field"><label id="l7">هامش الربح %</label><input id="margin" type="number" value="30" min="0" step=".1"></div>
+      <div class="field"><label id="l8">الحد الأدنى للطلب</label><input id="minimumOrderPrice" type="number" value="5.00" min="0" step=".01"></div>
     </div>
+
     <button class="btn" id="calc">احسب السعر</button>
   </section>
 
   <section class="card" id="result" style="display:none">
     <h2 id="breakdown">تفصيل السعر</h2>
+    <h3 id="costBlock" class="result-subtitle">التكلفة</h3>
     <table>
       <thead><tr><th id="item">البند</th><th id="amount">القيمة</th></tr></thead>
       <tbody>
         <tr><td id="c1">الفيلامنت</td><td id="fc">0</td></tr>
         <tr><td id="c2">تشغيل الطابعة</td><td id="pc">0</td></tr>
-        <tr><td id="c3">الكهرباء</td><td id="ec">0</td></tr>
-        <tr><td id="c4">الصيانة</td><td id="mc">0</td></tr>
-        <tr><td id="c5">العمل</td><td id="lc">0</td></tr>
-        <tr><td id="c6">التغليف</td><td id="cc">0</td></tr>
-        <tr><td id="c7">أخرى</td><td id="oc">0</td></tr>
-        <tr><td id="c8">الربح</td><td id="pr">0</td></tr>
-        <tr><td id="c9">الإضافة الثابتة</td><td id="bo">0</td></tr>
+        <tr><td id="c3">العمل</td><td id="lc">0</td></tr>
+        <tr><td id="c4">التغليف</td><td id="cc">0</td></tr>
+      </tbody>
+    </table>
+    <h3 id="priceBlock" class="result-subtitle">السعر</h3>
+    <table>
+      <tbody>
+        <tr><td id="p1">التكلفة</td><td id="costTotal">0</td></tr>
+        <tr><td id="p2">هامش الربح</td><td id="profitAmount">0</td></tr>
+        <tr><td id="p3">الحد الأدنى للطلب</td><td id="floorAmount">0</td></tr>
         <tr class="total"><td id="total">السعر النهائي</td><td id="tot">0</td></tr>
       </tbody>
     </table>
+    <div class="rate-audit">
+      <span><strong id="rateGram">ريال/جرام</strong>: <b id="sarPerGram">0</b></span>
+      <span><strong id="rateHour">ريال/ساعة</strong>: <b id="sarPerHour">0</b></span>
+    </div>
+    <div id="floorApplied" class="floor-notice" style="display:none">تم تطبيق الحد الأدنى للطلب</div>
     <div class="final"><span id="suggested">السعر المقترح للبيع</span><span class="price" id="final">0 SAR</span></div>
     <div class="actions">
       <button class="secondary" id="printBtn">طباعة / حفظ PDF</button>
@@ -644,22 +666,22 @@ body.light-mode #landingPage .examples > div span{
 <script>
 const $=id=>document.getElementById(id);
 let lang="ar";
-let data={time:null,weight:null,length:null,layer:null,weightSource:null,fileName:null};
+let data={time:null,weight:null,length:null,layer:null,volume:null,weightSource:null,fileName:null};
 
 const ar={
 title:"حاسبة ياسر للطباعة ثلاثية الأبعاد",sub:"ارفع ملفك، اقرأ بيانات الطباعة، واحسب سعر البيع.",
 uploadTitle:"رفع ملف الطباعة",dropTitle:"اسحب ملف STL أو G-code هنا",dropSub:"أو اضغط لاختيار الملف",
-details:"تفاصيل الطباعة",t1:"مدة الطباعة",t2:"وزن الفيلامنت",t3:"طول الفيلامنت",t4:"ارتفاع الطبقة",
-notice:"بيانات G-code تُقرأ من ملف Cura عند توفرها. وزن الفيلامنت يُقرأ مباشرة إذا كان موجودًا، وإلا يُحسب من طول الفيلامنت وقطره وكثافة المادة. لا يتم إنشاء سعر بدون بيانات طباعة كافية.",
-settings:"إعدادات التسعير",l1:"سعر الفيلامنت / كجم",l2:"تشغيل الطابعة / ساعة",l3:"الكهرباء / ساعة",l4:"الصيانة",l5:"العمل",l6:"التغليف",l7:"أخرى",l8:"هامش الربح %",l9:"إضافة ثابتة",l10:"نوع الفيلامنت",l11:"قطر الفيلامنت (مم)",
-calc:"احسب السعر",breakdown:"تفصيل السعر",item:"البند",amount:"القيمة",c1:"الفيلامنت",c2:"تشغيل الطابعة",c3:"الكهرباء",c4:"الصيانة",c5:"العمل",c6:"التغليف",c7:"أخرى",c8:"الربح",c9:"الإضافة الثابتة",total:"السعر النهائي",suggested:"السعر المقترح للبيع",lang:"English",un:"غير متوفر"
+details:"تفاصيل الطباعة",t1:"مدة الطباعة",t2:"وزن الفيلامنت",t3:"طول الفيلامنت",t4:"ارتفاع الطبقة",t5:"الحجم",
+notice:"بيانات G-code تُقرأ من ملف Cura عند توفرها. يجب أن يتوفر وزن الفيلامنت ومدة الطباعة لحساب السعر.",
+settings:"إعدادات التسعير",simpleNote:"إعدادات بسيطة لعملك: غيّر فقط الأشياء التي تستخدمها.",l1:"سعر الفيلامنت / كجم",l2:"تكلفة تشغيل الطابعة / ساعة",l3:"أجر العمل / ساعة",l4:"ساعات العمل",l5:"دقائق العمل",l6:"التغليف",l7:"هامش الربح %",l8:"الحد الأدنى للطلب",
+calc:"احسب السعر",breakdown:"تفصيل السعر",costBlock:"التكلفة",priceBlock:"السعر",item:"البند",amount:"القيمة",c1:"الفيلامنت",c2:"تشغيل الطابعة",c3:"الكهرباء",c4:"المستهلكات",c5:"الفشل",c6:"العمل",c7:"التغليف",p1:"التكلفة",p2:"هامش الربح",p3:"الحد الأدنى للطلب",total:"السعر النهائي",suggested:"السعر المقترح للبيع",rateGram:"ريال/جرام",rateHour:"ريال/ساعة",floorApplied:"تم تطبيق الحد الأدنى للطلب",lang:"English",un:"غير متوفر"
 };
 const en={...ar,title:"Yaser 3D Printing Calculator",sub:"Upload your file, read print data, and calculate the selling price.",
 uploadTitle:"Print File Upload",dropTitle:"Drop an STL or G-code file here",dropSub:"or click to choose a file",
-details:"Print Details",t1:"Print Time",t2:"Filament Weight",t3:"Filament Length",t4:"Layer Height",
-notice:"G-code data is read from the Cura file when available. Filament weight is read directly when present; otherwise it is calculated from length, diameter, and material density. No price is generated without sufficient print data.",
-settings:"Pricing Settings",l1:"Filament Price / kg",l2:"Printer Operation / hour",l3:"Electricity / hour",l4:"Maintenance",l5:"Labor",l6:"Packaging",l7:"Other",l8:"Profit Margin %",l9:"Fixed Addition",l10:"Filament Material",l11:"Filament Diameter (mm)",
-calc:"Calculate Price",breakdown:"Price Breakdown",item:"Item",amount:"Value",c1:"Filament",c2:"Printer Operation",c3:"Electricity",c4:"Maintenance",c5:"Labor",c6:"Packaging",c7:"Other",c8:"Profit",c9:"Fixed Addition",total:"Final Price",suggested:"Suggested Selling Price",lang:"العربية",un:"Unavailable"};
+details:"Print Details",t1:"Print Time",t2:"Filament Weight",t3:"Filament Length",t4:"Layer Height",t5:"Volume",
+notice:"G-code data is read from the Cura file when available. Filament weight and print time are required to calculate the price.",
+settings:"Pricing Settings",simpleNote:"Simple settings for your small business. Change only what you use.",l1:"Filament Price / kg",l2:"Printer cost / hour",l3:"Labor Rate / hour",l4:"Labor Hours",l5:"Labor Minutes",l6:"Packaging",l7:"Profit Margin %",l8:"Minimum Order Price",
+calc:"Calculate Price",breakdown:"Price Breakdown",costBlock:"Cost",priceBlock:"Price",item:"Item",amount:"Value",c1:"Filament",c2:"Machine",c3:"Electricity",c4:"Consumables",c5:"Failure",c6:"Labor",c7:"Packaging",p1:"Cost",p2:"Profit Margin",p3:"Minimum Order Price",total:"Final Price",suggested:"Suggested Selling Price",rateGram:"SAR/gram",rateHour:"SAR/hour",floorApplied:"Minimum order price applied",lang:"العربية",un:"Unavailable"};
 
 function text(){
  const t=lang==="ar"?ar:en;
@@ -693,73 +715,77 @@ async function readFile(file){
  $("fileInfo").style.display="block";
  $("fileInfo").textContent=file.name+" • "+(file.size/1024/1024).toFixed(2)+" MB";
  let ext=file.name.split(".").pop().toLowerCase();
- data={time:null,weight:null,length:null,layer:null,weightSource:null,fileName:file.name};
+ data={time:null,weight:null,length:null,layer:null,volume:null,weightSource:null,fileName:file.name};
  if(["gcode","gco","gc"].includes(ext))parseG(await file.text());
  else if(ext==="stl")parseSTL(await file.arrayBuffer());
  render();
 }
 
+/**
+ * @param {number} lengthMeters filament length
+ * @param {number} diameterMm 1.75 or 2.85
+ * @param {number} densityGPerCm3 material density
+ * @returns {{grams:number, volumeCm3:number}}
+ */
+function filamentMass(lengthMeters, diameterMm, densityGPerCm3) {
+  const radiusMm  = diameterMm / 2;
+  const areaMm2   = Math.PI * radiusMm * radiusMm;
+  const lengthMm  = lengthMeters * 1000;
+  const volumeMm3 = lengthMm * areaMm2;
+  const volumeCm3 = volumeMm3 / 1000;
+  return { grams: volumeCm3 * densityGPerCm3, volumeCm3 };
+}
+
+const RX = {
+  lengthM : /;\s*Filament used\s*:\s*([\d.]+)\s*m/i,
+  weightG : /;\s*Filament weight\s*[:=]\s*([\d.]+)/i,
+  prusaG  : /;\s*filament used \[g\]\s*=\s*([\d.]+)/i,
+  timeS   : /;TIME:(\d+)/,
+  prusaT  : /;\s*estimated printing time.*?=\s*(.+)$/im,
+  layerH  : /;\s*Layer height\s*:\s*([\d.]+)/i
+};
+
 function parseG(s){
- let m;
+  let m=s.match(RX.timeS);
+  if(m) data.time=+m[1]/3600;
+  if(data.time==null){
+    m=s.match(/;TIME\s*=\s*([\d.]+)/i);
+    if(m) data.time=+m[1]/3600;
+  }
 
- // Cura commonly writes:
- // ;TIME:2852
- // ;Filament used: 2.15737m
- // ;Layer height: 0.2
- m=s.match(/;TIME\s*:\s*([\d.]+)/i);
- if(m) data.time=+m[1]/3600;
+  m=s.match(RX.lengthM);
+  if(m) data.length=+m[1];
+  if(data.length==null){
+    m=s.match(/;\s*Filament used\s*[:=]\s*([\d.]+)\s*(mm|m)\b/i);
+    if(m) data.length=m[2].toLowerCase()==="m" ? +m[1] : +m[1]/1000;
+  }
 
- if(data.time==null){
-   m=s.match(/;TIME\s*=\s*([\d.]+)/i);
-   if(m) data.time=+m[1]/3600;
- }
+  m=s.match(RX.weightG);
+  if(m){data.weight=+m[1];data.weightSource="gcode";}
+  if(data.weight==null){
+    m=s.match(RX.prusaG);
+    if(m){data.weight=+m[1];data.weightSource="gcode";}
+  }
 
- // Accept both metres and millimetres.
- m=s.match(/;Filament used\s*:\s*([\d.]+)\s*(mm|m)\b/i);
- if(m){
-   data.length=(m[2].toLowerCase()==="m") ? +m[1] : +m[1]/1000;
- }
+  m=s.match(RX.layerH);
+  if(m) data.layer=+m[1];
+  if(data.layer==null){
+    m=s.match(/;\s*layer_height\s*=\s*([\d.]+)/i);
+    if(m) data.layer=+m[1];
+  }
 
- if(data.length==null){
-   m=s.match(/;Filament used\s*=\s*([\d.]+)\s*(mm|m)\b/i);
-   if(m){
-     data.length=(m[2].toLowerCase()==="m") ? +m[1] : +m[1]/1000;
-   }
- }
+  if(data.time==null){
+    m=s.match(RX.prusaT);
+    if(m){
+      const txt=m[1];
+      const h=(txt.match(/(\d+)\s*h/i)||[])[1];
+      const min=(txt.match(/(\d+)\s*m/i)||[])[1];
+      const sec=(txt.match(/(\d+)\s*s/i)||[])[1];
+      if(h||min||sec) data.time=(+(h||0))+(+(min||0))/60+(+(sec||0))/3600;
+    }
+  }
 
- // Some custom Cura profiles write weight explicitly.
- m=s.match(/;Filament weight\s*[=:]\s*([\d.]+)\s*g?/i);
- if(m){data.weight=+m[1];data.weightSource="gcode";}
 
- if(data.weight==null){
-   m=s.match(/;filament\s+weight\s*[=:]\s*([\d.]+)\s*g?/i);
-   if(m){data.weight=+m[1];data.weightSource="gcode";}
- }
-
- m=s.match(/;Layer height\s*:\s*([\d.]+)/i);
- if(m) data.layer=+m[1];
-
- if(data.layer==null){
-   m=s.match(/;layer_height\s*=\s*([\d.]+)/i);
-   if(m) data.layer=+m[1];
- }
-
- // Prusa/SuperSlicer style estimated time.
- if(data.time==null){
-   m=s.match(/estimated printing time.*?=\s*(?:(\d+)h)?\s*(?:(\d+)m)?\s*(?:(\d+)s)?/i);
-   if(m) data.time=(+(m[1]||0))+(+(m[2]||0))/60+(+(m[3]||0))/3600;
- }
-
- // Cura often provides filament LENGTH but not WEIGHT.
- // Calculate an estimate using standard 1.75 mm PLA density.
- // This makes the weight appear instead of leaving it blank.
- if(data.weight==null && data.length!=null){
-   const diameter=Number($("diameter").value||1.75);
-   const density=Number($("material").value||1.24); // g/cm³, PLA approximation
-   const radius=diameter/2;
-   const volumeCm3=Math.PI*radius*radius*(data.length*100)/1000;
-   data.weight=volumeCm3*density;data.weightSource="calculated";
- }
 }
 function parseSTL(buf){
  if(buf.byteLength<84)return;
@@ -794,31 +820,73 @@ function updatePrintReport(total){
  $("printTitle").textContent=t.title;
 }
 
+function quote(input) {
+  const { grams, hours, spoolPricePerKg, machineHourRate, labourHours, labourMinutes, labourHourRate, packaging, margin, minimumOrderPrice } = input;
+  const material = grams * (spoolPricePerKg / 1000);
+  const machine = hours * machineHourRate;
+  const labour = (labourHours + (labourMinutes / 60)) * labourHourRate;
+  const cost = material + machine + labour + packaging;
+  const price = Math.max(cost * (1 + margin), minimumOrderPrice);
+  return { material, machine, labour, packaging, cost, price };
+}
+
+$("labourMinutes").addEventListener("input",()=>{
+  const v=Math.min(60,Math.max(0,Number($("labourMinutes").value)||0));
+  $("labourMinutes").value=v;
+});
+
 $("calc").onclick=()=>{
- // Never calculate a price from empty/default values.
- if(!data.fileName){
-   $("result").style.display="none";
-   showMessage(lang==="ar"?"ارفع ملف G-code أو STL أولاً قبل حساب السعر.":"Upload a G-code or STL file before calculating the price.");
-   return;
- }
- // A selling price requires actual print time and filament usage.
- if(data.time==null || data.weight==null){
-   $("result").style.display="none";
-   showMessage(lang==="ar"?"لا يمكن حساب سعر موثوق لهذا الملف. تحتاج إلى مدة الطباعة ووزن/طول الفيلامنت من G-code.":"A reliable price cannot be calculated for this file. Print time and filament usage are required; use the G-code from your slicer.");
-   return;
- }
- let h=data.time,w=data.weight;
- let filament=h>=0?w/1000*val("filamentKg"):0;
- let printer=h*val("printerHour"),elec=h*val("electricityHour");
- let maintenance=val("maintenance"),labor=val("labor"),packaging=val("packaging"),other=val("other");
- let base=filament+printer+elec+maintenance+labor+packaging+other;
- let profit=base*val("profit")/100,bonus=val("bonus"),total=base+profit+bonus;
- $("fc").textContent=money(filament);$("pc").textContent=money(printer);$("ec").textContent=money(elec);
- $("mc").textContent=money(maintenance);$("lc").textContent=money(labor);$("cc").textContent=money(packaging);
- $("oc").textContent=money(other);$("pr").textContent=money(profit);$("bo").textContent=money(bonus);
- $("tot").textContent=money(total);$("final").textContent=money(total);$("result").style.display="block";
- updatePrintReport(total);
- $("result").scrollIntoView({behavior:"smooth"});
+  if(!data.fileName){
+    $("result").style.display="none";
+    showMessage(lang==="ar"?"ارفع ملف G-code أو STL أولاً قبل حساب السعر.":"Upload a G-code or STL file before calculating the price.");
+    return;
+  }
+  if(data.time==null || data.weight==null){
+    $("result").style.display="none";
+    showMessage(lang==="ar"?"لا يمكن حساب السعر. يجب توفر مدة الطباعة ووزن الفيلامنت.":"Cannot calculate a price. Print time and filament weight are required.");
+    return;
+  }
+
+  const q=quote({
+    grams:data.weight,
+    hours:data.time,
+    spoolPricePerKg:val("filamentKg"),
+    machineHourRate:val("machineHourRate"),
+    labourHours:val("labourHours"),
+    labourMinutes:Math.min(60, Math.max(0, val("labourMinutes"))),
+    labourHourRate:val("labourHourRate"),
+    packaging:val("packaging"),
+    margin:val("margin")/100,
+    minimumOrderPrice:val("minimumOrderPrice")
+  });
+
+  const marginAmount=q.cost*val("margin")/100;
+  const floorApplied=q.price===val("minimumOrderPrice") && q.cost*(1+val("margin")/100)<val("minimumOrderPrice");
+
+  $("fc").textContent=money(q.material);
+  $("pc").textContent=money(q.machine);
+  $("lc").textContent=money(q.labour);
+  $("cc").textContent=money(q.packaging);
+  $("costTotal").textContent=money(q.cost);
+  $("profitAmount").textContent=money(marginAmount);
+  $("floorAmount").textContent=money(val("minimumOrderPrice"));
+  $("tot").textContent=money(q.price);
+  $("final").textContent=money(q.price);
+  $("sarPerGram").textContent=(q.price/data.weight).toFixed(2);
+  $("sarPerHour").textContent=(q.price/data.time).toFixed(2);
+  $("floorApplied").style.display=floorApplied?"block":"none";
+
+  $("result").style.display="block";
+  updatePrintReport(q.price);
+
+  console.group("YASERHUB pricing breakdown");
+  console.log({grams:data.weight,volumeCm3:data.volume,hours:data.time,lengthM:data.length});
+  console.log(q);
+  console.log({marginAmount,minimumOrderPrice:val("minimumOrderPrice"),finalPrice:q.price,
+    sarPerGram:q.price/data.weight,sarPerHour:q.price/data.time,floorApplied});
+  console.groupEnd();
+
+  $("result").scrollIntoView({behavior:"smooth"});
 };
 
 $("printBtn").onclick=()=>{
@@ -835,103 +903,6 @@ $("copyBtn").onclick=async()=>{
  }
  try{await navigator.clipboard.writeText($("final").textContent);$("copyBtn").textContent=lang==="ar"?"تم النسخ":"Copied";setTimeout(()=>text(),1200)}catch(e){showMessage(lang==="ar"?"تعذر نسخ السعر تلقائيًا.":"Could not copy the price automatically.");}
 };
-["material","diameter"].forEach(id=>$(id).addEventListener("change",()=>{
- if(data.fileName && data.weightSource==="calculated"){
-   if(data.length!=null){
-     const diameter=Number($("diameter").value||1.75),density=Number($("material").value||1.24),r=diameter/2;
-     data.weight=Math.PI*r*r*(data.length*100)/1000*density;
-   }
-   render();
- }
-}));
-text();
-</script>
-
-</div>
-
-
-<script id="landing-page-script">
-document.addEventListener("DOMContentLoaded", function () {
-  const PASSWORD_HASH = "43e0878538dfddffcdc6f533606ef0e0d5b93c3623eaa4d18f4c31f9b06c60ff";
-  const MAX_ATTEMPTS = 3;
-  const LOCKOUT_MS = 5 * 60 * 1000;
-  let attempts = 0;
-  let lockedUntil = 0;
-
-  const landing = document.getElementById("landingPage");
-  const deeper = document.getElementById("deeperInfoBtn");
-  const box = document.getElementById("unlockBox");
-  const input = document.getElementById("calculatorPassword");
-  const unlock = document.getElementById("unlockCalculator");
-  const error = document.getElementById("unlockError");
-  const app = document.getElementById("calculatorApp");
-
-  if (!landing || !deeper || !box || !input || !unlock || !error || !app) return;
-
-  deeper.addEventListener("click", function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (Date.now() < lockedUntil) return;
-
-    const open = box.style.display === "block";
-    box.style.display = open ? "none" : "block";
-    error.style.display = "none";
-
-    if (!open) setTimeout(function () { input.focus(); }, 50);
-  });
-
-  unlock.addEventListener("click", async function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (Date.now() < lockedUntil) return;
-
-    const hashBuffer = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(input.value)
-    );
-    const enteredHash = Array.from(new Uint8Array(hashBuffer))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
-
-    if (enteredHash === PASSWORD_HASH) {
-      landing.style.display = "none";
-      app.style.display = "block";
-      return;
-    }
-
-    attempts++;
-    input.value = "";
-
-    if (attempts < MAX_ATTEMPTS) {
-      error.style.display = "block";
-      error.textContent = "Incorrect — " + (MAX_ATTEMPTS - attempts) + " attempts left...";
-    } else {
-      lockedUntil = Date.now() + LOCKOUT_MS;
-      input.disabled = true;
-      unlock.disabled = true;
-      error.style.display = "block";
-      error.textContent = "Try again in 5:00.";
-    }
-  });
-
-  input.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") unlock.click();
-  });
-
-  setInterval(function () {
-    if (lockedUntil && Date.now() >= lockedUntil) {
-      lockedUntil = 0;
-      attempts = 0;
-      input.disabled = false;
-      unlock.disabled = false;
-      error.style.display = "none";
-    } else if (lockedUntil) {
-      const s = Math.ceil((lockedUntil - Date.now()) / 1000);
-      error.textContent = "Try again in " + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") + ".";
-    }
-  }, 1000);
-});
 </script>
 <script id="landing-language-script">
 document.addEventListener("DOMContentLoaded", function(){
