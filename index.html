@@ -904,6 +904,50 @@ $("copyBtn").onclick=async()=>{
  try{await navigator.clipboard.writeText($("final").textContent);$("copyBtn").textContent=lang==="ar"?"تم النسخ":"Copied";setTimeout(()=>text(),1200)}catch(e){showMessage(lang==="ar"?"تعذر نسخ السعر تلقائيًا.":"Could not copy the price automatically.");}
 };
 </script>
+<script id="deeper-info-fix">
+document.addEventListener("DOMContentLoaded", function(){
+  const btn=document.getElementById("deeperInfoBtn");
+  const box=document.getElementById("unlockBox");
+  const input=document.getElementById("calculatorPassword");
+  const unlock=document.getElementById("unlockCalculator");
+  const error=document.getElementById("unlockError");
+  const landing=document.getElementById("landingPage");
+  const app=document.getElementById("calculatorApp");
+  if(!btn||!box||!input||!unlock||!error||!landing||!app)return;
+  let attempts=0, lockedUntil=0;
+  const passwordHash="43e0878538dfddffcdc6f533606ef0e0d5b93c3623eaa4d18f4c31f9b06c60ff";
+  function hash(text){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(text)).then(buf=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join(""));}
+  btn.addEventListener("click",function(e){
+    e.preventDefault();e.stopPropagation();
+    if(Date.now()<lockedUntil)return;
+    const open=box.style.display==="block";
+    box.style.display=open?"none":"block";
+    error.style.display="none";
+    if(!open){input.value="";setTimeout(()=>input.focus(),50);}
+  });
+  async function check(){
+    if(Date.now()<lockedUntil){error.textContent="Try again in five minutes.";error.style.display="block";return;}
+    const h=await hash(input.value);
+    if(h===passwordHash){
+      box.style.display="none";landing.style.display="none";app.style.display="block";
+      window.scrollTo(0,0);
+      return;
+    }
+    attempts++;
+    input.value="";
+    if(attempts>=3){
+      lockedUntil=Date.now()+5*60*1000;
+      error.textContent="Too many attempts. Try again in five minutes.";
+    }else{
+      const left=3-attempts;
+      error.textContent="Incorrect. "+left+" attempt"+(left===1?"":"s")+" remaining.";
+    }
+    error.style.display="block";
+  }
+  unlock.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();check();});
+  input.addEventListener("keydown",function(e){if(e.key==="Enter")check();});
+});
+</script>
 <script id="landing-language-script">
 document.addEventListener("DOMContentLoaded", function(){
   const btn = document.getElementById("landingLang");
@@ -1036,5 +1080,56 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 
+<script id="calculate-button-final-fix">
+document.addEventListener("DOMContentLoaded", function(){
+  const btn=document.getElementById("calc");
+  if(!btn) return;
+  btn.onclick=function(e){
+    e.preventDefault();
+    try{
+      if(!data || !data.fileName){
+        showMessage(lang==="ar"?"ارفع ملف G-code أو STL أولاً.":"Upload a G-code or STL file first.");
+        return;
+      }
+      if(data.time==null || data.weight==null){
+        showMessage(lang==="ar"?"لم أجد مدة الطباعة ووزن الفيلامنت. استخدم ملف G-code من Cura.":"Print time and filament weight are missing. Use the G-code from Cura.");
+        return;
+      }
+      const q=quote({
+        grams:Number(data.weight),
+        hours:Number(data.time),
+        spoolPricePerKg:val("filamentKg"),
+        machineHourRate:val("machineHourRate"),
+        labourHours:val("labourHours"),
+        labourMinutes:Math.min(60,Math.max(0,val("labourMinutes"))),
+        labourHourRate:val("labourHourRate"),
+        packaging:val("packaging"),
+        margin:val("margin")/100,
+        minimumOrderPrice:val("minimumOrderPrice")
+      });
+      const marginAmount=q.cost*val("margin")/100;
+      const floorApplied=q.price===val("minimumOrderPrice") && q.cost*(1+val("margin")/100)<val("minimumOrderPrice");
+      document.getElementById("fc").textContent=money(q.material);
+      document.getElementById("pc").textContent=money(q.machine);
+      document.getElementById("lc").textContent=money(q.labour);
+      document.getElementById("cc").textContent=money(q.packaging);
+      document.getElementById("costTotal").textContent=money(q.cost);
+      document.getElementById("profitAmount").textContent=money(marginAmount);
+      document.getElementById("floorAmount").textContent=money(val("minimumOrderPrice"));
+      document.getElementById("tot").textContent=money(q.price);
+      document.getElementById("final").textContent=money(q.price);
+      document.getElementById("sarPerGram").textContent=(q.price/Number(data.weight)).toFixed(2);
+      document.getElementById("sarPerHour").textContent=(q.price/Number(data.time)).toFixed(2);
+      document.getElementById("floorApplied").style.display=floorApplied?"block":"none";
+      document.getElementById("result").style.display="block";
+      updatePrintReport(q.price);
+      document.getElementById("result").scrollIntoView({behavior:"smooth"});
+    }catch(err){
+      console.error("YASERHUB calculate error",err);
+      showMessage(lang==="ar"?"حدث خطأ أثناء الحساب. أعد تحميل الصفحة وجرب مرة أخرى.":"An error occurred while calculating. Reload the page and try again.");
+    }
+  };
+});
+</script>
 </body>
 </html>
