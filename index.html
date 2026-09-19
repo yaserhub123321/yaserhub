@@ -696,10 +696,19 @@ $("lang").onclick=()=>{lang=lang==="ar"?"en":"ar";text()};
 
 function render(){
  const t=lang==="ar"?ar:en;
+ // Keep the displayed filament data synchronized.
+ if(data.volume==null && data.weight!=null) data.volume=data.weight/1.24;
+ if(data.weight==null && data.length!=null){
+   const calc=filamentMass(data.length,1.75,1.24);
+   data.weight=calc.grams;
+   data.volume=calc.volumeCm3;
+   data.weightSource="calculated";
+ }
  $("time").textContent=data.time==null?t.un:fmtTime(data.time);
  $("weight").textContent=data.weight==null?t.un:data.weight.toFixed(2)+" g";
  $("length").textContent=data.length==null?t.un:data.length.toFixed(2)+" m";
  $("layer").textContent=data.layer==null?t.un:data.layer.toFixed(2)+" mm";
+ $("volume").textContent=data.volume==null?t.un:data.volume.toFixed(2)+" cm³";
 }
 function fmtTime(h){
  let m=Math.round(h*60),hh=Math.floor(m/60),mm=m%60;
@@ -776,6 +785,20 @@ function parseG(s){
     if(m) data.layer=+m[1];
   }
 
+  // If Cura gives filament length but not weight, calculate both from the
+  // standard 1.75 mm PLA filament diameter and 1.24 g/cm³ density.
+  // This keeps the calculator working even when Cura does not include a
+  // separate filament-weight comment.
+  if(data.weight==null && data.length!=null){
+    const calc=filamentMass(data.length,1.75,1.24);
+    data.weight=calc.grams;
+    data.volume=calc.volumeCm3;
+    data.weightSource="calculated";
+  }
+  if(data.volume==null && data.weight!=null){
+    data.volume=data.weight/1.24;
+  }
+
   if(data.time==null){
     m=s.match(RX.prusaT);
     if(m){
@@ -800,7 +823,8 @@ function parseSTL(buf){
   let cx=v.getFloat32(o+36,true),cy=v.getFloat32(o+40,true),cz=v.getFloat32(o+44,true);
   vol+=(ax*(by*cz-bz*cy)-ay*(bx*cz-bz*cx)+az*(bx*cy-by*cx))/6;o+=50;
  }
- data.weight=Math.abs(vol)/1000*Number($("material").value||1.24);
+ data.volume=Math.abs(vol)/1000;
+ data.weight=data.volume*1.24;
  data.weightSource="calculated";
 }
 
@@ -836,60 +860,6 @@ $("labourMinutes").addEventListener("input",()=>{
   const v=Math.min(60,Math.max(0,Number($("labourMinutes").value)||0));
   $("labourMinutes").value=v;
 });
-
-$("calc").onclick=()=>{
-  if(val("filamentGrams")<=0){
-    $("result").style.display="none";
-    showMessage(lang==="ar"?"أدخل وزن الفيلامنت المستخدم بالجرام.":"Enter the filament used in grams.");
-    return;
-  }
-  if(val("printHours")<=0 && val("printMinutes")<=0){
-    $("result").style.display="none";
-    showMessage(lang==="ar"?"أدخل مدة الطباعة بالساعات والدقائق.":"Enter the print time in hours and minutes.");
-    return;
-  }
-
-  const q=quote({
-    grams:val("filamentGrams"),
-    hours:val("printHours") + Math.min(59,Math.max(0,val("printMinutes")))/60,
-    spoolPricePerKg:val("filamentKg"),
-    machineHourRate:0,
-    labourHours:val("labourHours"),
-    labourMinutes:Math.min(60, Math.max(0, val("labourMinutes"))),
-    labourHourRate:val("labourHourRate"),
-    packaging:val("packaging"),
-    margin:val("margin")/100,
-    minimumOrderPrice:val("minimumOrderPrice")
-  });
-
-  const marginAmount=q.cost*val("margin")/100;
-  const floorApplied=q.price===val("minimumOrderPrice") && q.cost*(1+val("margin")/100)<val("minimumOrderPrice");
-
-  $("fc").textContent=money(q.material);
-  $("pc").textContent=money(q.machine);
-  $("lc").textContent=money(q.labour);
-  $("cc").textContent=money(q.packaging);
-  $("costTotal").textContent=money(q.cost);
-  $("profitAmount").textContent=money(marginAmount);
-  $("floorAmount").textContent=money(val("minimumOrderPrice"));
-  $("tot").textContent=money(q.price);
-  $("final").textContent=money(q.price);
-  $("sarPerGram").textContent=(q.price/data.weight).toFixed(2);
-  $("sarPerHour").textContent=(q.price/data.time).toFixed(2);
-  $("floorApplied").style.display=floorApplied?"block":"none";
-
-  $("result").style.display="block";
-  updatePrintReport(q.price);
-
-  console.group("YASERHUB pricing breakdown");
-  console.log({grams:data.weight,volumeCm3:data.volume,hours:data.time,lengthM:data.length});
-  console.log(q);
-  console.log({marginAmount,minimumOrderPrice:val("minimumOrderPrice"),finalPrice:q.price,
-    sarPerGram:q.price/data.weight,sarPerHour:q.price/data.time,floorApplied});
-  console.groupEnd();
-
-  $("result").scrollIntoView({behavior:"smooth"});
-};
 
 $("printBtn").onclick=()=>{
  if($("result").style.display!=="block"){
@@ -1083,57 +1053,65 @@ document.addEventListener("DOMContentLoaded", function(){
 </script>
 
 <script id="calculate-button-final-fix">
-document.addEventListener("DOMContentLoaded", function(){
-  const btn=document.getElementById("calc");
-  if(!btn) return;
-  btn.onclick=function(e){
-    e.preventDefault();
-    try{
-      if(val("filamentGrams")<=0){
-        showMessage(lang==="ar"?"أدخل وزن الفيلامنت المستخدم بالجرام.":"Enter the filament used in grams.");
-        return;
+(function(){
+  function setup(){
+    const btn=document.getElementById("calc");
+    if(!btn) return;
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      try{
+        const num=id => { const el=document.getElementById(id); return el ? (Number(el.value)||0) : 0; };
+        const grams=num("filamentGrams");
+        const printHours=num("printHours") + Math.max(0,num("printMinutes"))/60;
+        const spoolPrice=num("filamentKg");
+        const labourHours=num("labourHours") + Math.max(0,num("labourMinutes"))/60;
+        const labourRate=num("labourHourRate");
+        const packaging=num("packaging");
+        const margin=num("margin")/100;
+        const minimum=num("minimumOrderPrice");
+
+        if(grams<=0){
+          if(window.showMessage) showMessage((window.lang||"en")==="ar"?"أدخل وزن الفيلامنت المستخدم بالجرام.":"Enter the filament used in grams.");
+          return;
+        }
+        if(printHours<=0){
+          if(window.showMessage) showMessage((window.lang||"en")==="ar"?"أدخل مدة الطباعة بالساعات والدقائق.":"Enter the print time in hours and minutes.");
+          return;
+        }
+
+        const material=grams*(spoolPrice/1000);
+        const labour=labourHours*labourRate;
+        const cost=material+labour+packaging;
+        const price=Math.max(cost*(1+margin),minimum);
+        const profit=cost*margin;
+        const floorApplied=price===minimum && cost*(1+margin)<minimum;
+        const money2=x=>Number(x).toFixed(2)+" SAR";
+        const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+
+        set("fc",money2(material));
+        set("pc",money2(0));
+        set("lc",money2(labour));
+        set("cc",money2(packaging));
+        set("costTotal",money2(cost));
+        set("profitAmount",money2(profit));
+        set("floorAmount",money2(minimum));
+        set("tot",money2(price));
+        set("final",money2(price));
+        set("sarPerGram",(price/grams).toFixed(2));
+        set("sarPerHour",(price/printHours).toFixed(2));
+        const floor=document.getElementById("floorApplied"); if(floor) floor.style.display=floorApplied?"block":"none";
+        const result=document.getElementById("result"); if(result) result.style.display="block";
+        if(typeof updatePrintReport==="function") updatePrintReport(price);
+        if(result) result.scrollIntoView({behavior:"smooth"});
+      }catch(err){
+        console.error("YASERHUB calculate error",err);
+        alert("Calculator error: "+err.message);
       }
-      if(val("printHours")<=0 && val("printMinutes")<=0){
-        showMessage(lang==="ar"?"أدخل مدة الطباعة بالساعات والدقائق.":"Enter the print time in hours and minutes.");
-        return;
-      }
-      const grams=val("filamentGrams");
-      const hours=val("printHours") + Math.min(59,Math.max(0,val("printMinutes")))/60;
-      const q=quote({
-        grams,
-        hours,
-        spoolPricePerKg:val("filamentKg"),
-        machineHourRate:0,
-        labourHours:val("labourHours"),
-        labourMinutes:Math.min(60,Math.max(0,val("labourMinutes"))),
-        labourHourRate:val("labourHourRate"),
-        packaging:val("packaging"),
-        margin:val("margin")/100,
-        minimumOrderPrice:val("minimumOrderPrice")
-      });
-      const marginAmount=q.cost*val("margin")/100;
-      const floorApplied=q.price===val("minimumOrderPrice") && q.cost*(1+val("margin")/100)<val("minimumOrderPrice");
-      document.getElementById("fc").textContent=money(q.material);
-      document.getElementById("pc").textContent=money(q.machine);
-      document.getElementById("lc").textContent=money(q.labour);
-      document.getElementById("cc").textContent=money(q.packaging);
-      document.getElementById("costTotal").textContent=money(q.cost);
-      document.getElementById("profitAmount").textContent=money(marginAmount);
-      document.getElementById("floorAmount").textContent=money(val("minimumOrderPrice"));
-      document.getElementById("tot").textContent=money(q.price);
-      document.getElementById("final").textContent=money(q.price);
-      document.getElementById("sarPerGram").textContent=(q.price/Number(data.weight)).toFixed(2);
-      document.getElementById("sarPerHour").textContent=(q.price/Number(data.time)).toFixed(2);
-      document.getElementById("floorApplied").style.display=floorApplied?"block":"none";
-      document.getElementById("result").style.display="block";
-      updatePrintReport(q.price);
-      document.getElementById("result").scrollIntoView({behavior:"smooth"});
-    }catch(err){
-      console.error("YASERHUB calculate error",err);
-      showMessage(lang==="ar"?"حدث خطأ أثناء الحساب. أعد تحميل الصفحة وجرب مرة أخرى.":"An error occurred while calculating. Reload the page and try again.");
-    }
-  };
-});
+    };
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",setup); else setup();
+})();
 </script>
 </body>
 </html>
